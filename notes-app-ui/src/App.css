@@ -1,0 +1,105 @@
+/* Main container */
+.div-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+/* Form and notes grid styling */
+.note-form {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notes-grid {
+  width: 55%;
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Note item styling */
+.note-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  /* Stack form and notes vertically */
+  .div-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .note-form, .notes-grid {
+    width: 100%;
+  }
+
+  /* Adjust grid to one column on smaller screens */
+  .notes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Button styling */
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #4CAF50; /* Primary color */
+  color: #fff;
+}
+
+/* Hover effect for buttons */
+button:hover {
+  background-color: #45a049; /* Slightly darker shade */
+  transform: scale(1.1); /* Increase size */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Button for cancel action */
+button.cancel-button {
+  background-color: #f44336; /* Red for cancel button */
+}
+
+button.cancel-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Save button animation */
+button[type="submit"] {
+  background-color: #2196F3; /* Blue for submit */
+}
+
+button[type="submit"]:hover {
+  background-color: #1e88e5;
+}
+
+/* Additional styling for edit buttons container */
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-buttons button {
+  flex: 1;
+}
+
+/* Fly-away animation */
+.fly-away {
+  transform: translateX(100vw) translateY(-50px); /* Move out of view */
+  opacity: 0; /* Fade out effect */
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out; /* Match this duration with the timeout in deleteNote */
+}
+
