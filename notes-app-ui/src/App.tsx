@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 
 // Defining a TypeScript type for a Note, which includes an id, title, and content.
@@ -11,13 +11,7 @@ type Note = {
 // Main component
 const App = () => {
   // State to store an array of notes, initialized with some default notes.
-  const [notes, setNotes] = useState<Note[]>([
-    { id: 1, title: 'note 1', content: 'note content 1' },
-    { id: 2, title: 'note 2', content: 'note content 2' },
-    { id: 3, title: 'note 3', content: 'note content 3' },
-    { id: 4, title: 'note 4', content: 'note content 4' },
-    { id: 5, title: 'note 5', content: 'note content 5' },
-  ]);
+  const [notes, setNotes] = useState<Note[]>([]);
 
   // States for handling new note input
   const [title, setTitle] = useState("");
@@ -25,6 +19,21 @@ const App = () => {
 
   // State for handling editing notes
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/notes")
+        const notes: Note[] = await response.json()
+        setNotes(notes)
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    fetchNotes();
+
+  },[]);
   
   // State to track which note is flying away
   const [flyAwayNoteId, setFlyAwayNoteId] = useState<number | null>(null);
@@ -36,46 +45,72 @@ const App = () => {
   }
 
   // Function to handle form submission and add a new note to the list
-  const handleAddNote = (event: React.FormEvent) => {
-    event.preventDefault(); // Prevents page reload on form submission
+  const handleAddNote = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     // Creating a new note object with a unique id, title, and content from form inputs
-    const newNote: Note = {
-      id: notes.length + 1, // New id based on current note count
-      title: title,
-      content: content
-    };
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/notes",{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({
+            title, content
+          })
+        }
+      );
+      const newNote = await response.json(); 
 
+      setNotes([newNote, ...notes]);
+      // Resetting the form fields
+      setTitle("");
+      setContent("");
+      
+    } catch (e) {
+      console.log(e)
+    }
     // Updating notes state by adding the new note at the start of the array
-    setNotes([newNote, ...notes]);
-
-    // Resetting the form fields
-    setTitle("");
-    setContent("");
+   
   };
 
-  const handleUpdateNote = (event: React.FormEvent) => {
+  const handleUpdateNote = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedNote) {
       return;
     }
 
-    const updatedNote: Note = {
-      id: selectedNote.id,
-      title: title,
-      content: content
-    };
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/notes/${selectedNote.id}`,{
+          method:"PUT",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({
+            title, content
+          })
+        }
+      )
+      const updatedNote = await response.json(); 
 
-    const updatedNotesList = notes.map((note) =>
-      note.id === selectedNote.id
-        ? updatedNote
-        : note
-    );
+      const updatedNotesList = notes.map((note) =>
+        note.id === selectedNote.id
+          ? updatedNote
+          : note
+      );
+  
+      setNotes(updatedNotesList);
+      setTitle("");
+      setContent("");
+      setSelectedNote(null);
+      
+    } catch (e) {
+      console.log(e)
+    }
 
-    setNotes(updatedNotesList);
-    setTitle("");
-    setContent("");
-    setSelectedNote(null);
+
   };
 
   const handleCancel = () => {
@@ -84,16 +119,27 @@ const App = () => {
     setSelectedNote(null);
   }
 
-  const deleteNote = (event: React.MouseEvent, noteId: number) => {
+  const deleteNote = async (event: React.MouseEvent, noteId: number) => {
     event.stopPropagation();
-    setFlyAwayNoteId(noteId);
 
-    // Delay the note deletion to allow for fly-away animation
-    setTimeout(() => {
-      const updatedNotes = notes.filter((note) => note.id !== noteId);
-      setNotes(updatedNotes);
-      setFlyAwayNoteId(null); // Reset fly-away state
-    }, 300); // Match this duration with the CSS transition
+    try {
+      await fetch(
+        `http://localhost:5000/api/notes/${noteId}`,{
+          method:"DELETE",
+        })
+      setFlyAwayNoteId(noteId);
+      // Delay the note deletion to allow for fly-away animation
+      setTimeout(() => {
+        const updatedNotes = notes.filter((note) => note.id !== noteId);
+        setNotes(updatedNotes);
+        setFlyAwayNoteId(null); // Reset fly-away state
+      }, 300); // Match this duration with the CSS transition
+      
+    } catch (e) {
+      console.log(e)
+    }
+
+
   }
 
   return (
